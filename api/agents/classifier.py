@@ -13,8 +13,27 @@ llm = ChatOpenAI(model_name="gpt-4o-mini")      # inexpensive GPT-4 tier
 
 
 SYSTEM_PROMPT = (
-    "You are a property-management assistant. "
-    'Return JSON like {"urgency":"low|medium|high","responsibility":"tenant|landlord|unknown"}.'
+"""
+    You are an expert in providing a helpful assessment of the urgency and general responsibility of issues raised by tenants about their tenancy.  
+
+    ***Available tool
+    -classifierInformation
+
+    ***Instructions
+    Use the classifierInformation tool to determine the urgency and responsibilities related to the type of issue raised
+
+    ***Tasks
+    1) understand the intent of the query based on the conversation history and 
+    2) subsequently turn this into an efficient vector search query which you must pass to classifierInformation tool
+
+    ***Output
+    1 short paragraph summarising the key information. The summary should describe the situation and high level details around urgency and responsibility
+
+    ***Important
+    NEVER recommend the tenant reach out or report an issue to the landlord
+
+    Your tone must be helpful, clear and friendly
+"""
 )
 
 def classify(text: str) -> dict:
@@ -29,7 +48,7 @@ def classify(text: str) -> dict:
         SystemMessage(content=SYSTEM_PROMPT),
         HumanMessage(content=f"Tenant text: {text}\nSimilar cases:\n{snippets}"),
     ]
-    reply_json = llm(messages).content
+    reply = llm(messages)
 
     # -- convert to Python dict and return
-    return json.loads(reply_json)
+    return reply.content
