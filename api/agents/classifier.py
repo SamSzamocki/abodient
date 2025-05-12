@@ -36,19 +36,29 @@ SYSTEM_PROMPT = (
 """
 )
 
-def classify(text: str) -> dict:
-    """Return urgency & responsibility for a tenant message."""
-    # -- fetch similar past cases from vector store
-    embedding = embedder.embed_query(text)
-    matches = index.query(vector=embedding, top_k=3, include_metadata=True)
-    snippets = "\n".join(m["metadata"]["text"] for m in matches["matches"])
+def classify(text: str) -> str:
+    """Return a summary paragraph about urgency & responsibility for a tenant message."""
+    try:
+        # -- fetch similar past cases from vector store
+        embedding = embedder.embed_query(text)
+        matches = index.query(
+            vector=embedding,
+            top_k=3,
+            include_metadata=True,
+            namespace="urgency-1"
+)   
+        print("Pinecone matches:", matches)
 
-    # -- ask the LLM
-    messages = [
-        SystemMessage(content=SYSTEM_PROMPT),
-        HumanMessage(content=f"Tenant text: {text}\nSimilar cases:\n{snippets}"),
-    ]
-    reply = llm(messages)
+        snippets = "\n".join(m["metadata"]["text"] for m in matches["matches"])
 
-    # -- convert to Python dict and return
-    return reply.content
+        # -- ask the LLM
+        messages = [
+            SystemMessage(content=SYSTEM_PROMPT),
+            HumanMessage(content=f"Tenant text: {text}\nSimilar cases:\n{snippets}"),
+        ]
+        reply = llm(messages)
+        return reply.content
+
+    except Exception as e:
+        return f"Sorry, something went wrong while processing your request. (Error: {str(e)})"
+
