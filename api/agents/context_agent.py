@@ -135,7 +135,7 @@ IMPORTANT:
 - Use the context of the human / AI interaction if available to establish what the user's intentions are. If the user has already confirmed the question is relevant and you have enough clarity, do not keep asking for clarifications. Provide the final JSON accordingly.
 """
 
-def clarify(text: str) -> dict:
+def run_context_agent(text: str) -> dict:
     """Evaluate clarity, relevance, and context for a tenant query."""
     try:
         messages = [
